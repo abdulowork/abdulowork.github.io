@@ -43,8 +43,9 @@ minima:
     twitter: abdulowork
     github: abdulowork
     stackoverflow: "6407425"
-  google_analytics: G-XDPHFVS0QQ
   show_excerpts: true
+
+google_analytics: G-XDPHFVS0QQ
 
 show_excerpts: true
 permalink: /:title/
