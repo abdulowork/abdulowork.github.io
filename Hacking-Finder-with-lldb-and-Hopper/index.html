@@ -10,26 +10,17 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Do you want to never press Show Package Contents again? Or maybe you just want to learn a couple of practical lldb techniques? Either way, I invite you on the journey to discover a hidden feature within the Finder!" />
 <meta property="og:description" content="Do you want to never press Show Package Contents again? Or maybe you just want to learn a couple of practical lldb techniques? Either way, I invite you on the journey to discover a hidden feature within the Finder!" />
-<link rel="canonical" href="https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/" />
-<meta property="og:url" content="https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/" />
+<link rel="canonical" href="http://localhost:4000/Hacking-Finder-with-lldb-and-Hopper/" />
+<meta property="og:url" content="http://localhost:4000/Hacking-Finder-with-lldb-and-Hopper/" />
 <meta property="og:site_name" content="Through the wilds of 🍏 dev" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2022-05-01T00:00:00+08:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="Hacking the Finder with lldb and Hopper" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Timofey Solonin"},"dateModified":"2022-05-01T00:00:00+08:00","datePublished":"2022-05-01T00:00:00+08:00","description":"Do you want to never press Show Package Contents again? Or maybe you just want to learn a couple of practical lldb techniques? Either way, I invite you on the journey to discover a hidden feature within the Finder!","headline":"Hacking the Finder with lldb and Hopper","mainEntityOfPage":{"@type":"WebPage","@id":"https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/"},"url":"https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Timofey Solonin"},"dateModified":"2022-05-01T00:00:00+08:00","datePublished":"2022-05-01T00:00:00+08:00","description":"Do you want to never press Show Package Contents again? Or maybe you just want to learn a couple of practical lldb techniques? Either way, I invite you on the journey to discover a hidden feature within the Finder!","headline":"Hacking the Finder with lldb and Hopper","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/Hacking-Finder-with-lldb-and-Hopper/"},"url":"http://localhost:4000/Hacking-Finder-with-lldb-and-Hopper/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://abdulowork.github.io/feed.xml" title="Through the wilds of 🍏 dev" /><script async src="https://www.googletagmanager.com/gtag/js?id=G-XDPHFVS0QQ"></script>
-<script>
-  window['ga-disable-G-XDPHFVS0QQ'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){window.dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-XDPHFVS0QQ');
-</script>
-
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Through the wilds of 🍏 dev" />
 </head>
 <body><header class="site-header">
 
@@ -58,7 +49,7 @@
   </header>
 
   <div class="post-content e-content" itemprop="articleBody">
-    <p><img src="/assets/1/title.png" alt="title" /></p>
+    <p><img src="/assets/1/title.png.webp" alt="title" /></p>
 
 <p>Do you want to never press <code class="language-plaintext highlighter-rouge">Show Package Contents</code> again? Or maybe you just want to learn a couple of practical lldb techniques? Either way, I invite you on the journey to discover a hidden feature within the Finder!</p>
 
@@ -84,7 +75,7 @@ The backstory
 
 <p>Imagine you are working on an <strong>.app</strong> with multiple <strong>.bundle</strong> and <strong>.appex</strong> directories inside it. If you want to inspect the contents of this hierarchy, you would normally use a Finder. You build using Xcode, go to the DerivedData/Build/Products, and… unfortunately, to view the contents of each package you have to click through <code class="language-plaintext highlighter-rouge">Show Package Contents</code>. This is inconvenient because Finder doesn’t allow you to easily walk in and out of the package and working with multiple packages simultaneously easily gives you vertigo.</p>
 
-<p><img src="/assets/1/show_package_contents.png" alt="show_package_contents" /></p>
+<p><img src="/assets/1/show_package_contents.png.webp" alt="show_package_contents" /></p>
 
 <p>But what if it was possible to view packages as regular directories? After all, package <strong>is just a regular directory</strong>. How does Finder even understand something is a package? It turns out some file extensions such as .<strong>app</strong> are hardcoded in LaunchServices to be recognized as packages. For example, if you simply create a directory:</p>
 
@@ -95,7 +86,7 @@ The backstory
 
 <p>You can also <a href="https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/AboutBundles/AboutBundles.html#//apple_ref/doc/uid/10000123i-CH100-SW1">register</a> your own file extensions as packages:</p>
 
-<p><img src="/assets/1/apple_bundles.png" alt="apple_bundles" /></p>
+<p><img src="/assets/1/apple_bundles.png.webp" alt="apple_bundles" /></p>
 
 <h2 id="reverse-engineering-finder-using-hopper">
 <a href="#reverse-engineering-finder-using-hopper" class="heading-link">
@@ -112,7 +103,7 @@ Reverse engineering Finder using Hopper
 
 <p>Now we can search for references to “packages”:</p>
 
-<p><img src="/assets/1/package_search_hopper.png" alt="package_search_hopper" /></p>
+<p><img src="/assets/1/package_search_hopper.png.webp" alt="package_search_hopper" /></p>
 
 <p>And thankfully there are some! Of particular interest to us is the procedure lurking under the symbol <code class="language-plaintext highlighter-rouge">-[TBrowserContainerController allowsBrowsingPackages]</code>. If we look at the pseudo-code there is something weird about this procedure:</p>
 
@@ -130,7 +121,7 @@ Reverse engineering Finder using Hopper
 
 <p>The procedure that we are interested in starts at address <code class="language-plaintext highlighter-rouge">0x10009b788</code> (in different MacOS versions it might be different):</p>
 
-<p><img src="/assets/1/load_address.png" alt="load_address" /></p>
+<p><img src="/assets/1/load_address.png.webp" alt="load_address" /></p>
 
 <p>Let’s set a breakpoint there:</p>
 
@@ -150,7 +141,7 @@ Breakpoint 1: where <span class="o">=</span> Finder<span class="sb">`</span>___l
 
 <p>After the Finder execution continues you should finally be able to browse through any package as if it was a regular directory:</p>
 
-<p><img src="/assets/1/xcode_package.png" alt="xcode_package" /></p>
+<p><img src="/assets/1/xcode_package.png.webp" alt="xcode_package" /></p>
 
 <p>So after all the <code class="language-plaintext highlighter-rouge">-[TBrowserContainerController allowsBrowsingPackages]</code> is indeed responsible for displaying packages as regular directories! But how can we <code class="language-plaintext highlighter-rouge">return 1</code> from this procedure without having to type commands in lldb after opening each directory in Finder?</p>
 
@@ -231,7 +222,7 @@ Manipulating opcodes
 
 <p>Now we can finally unpause the Finder using <code class="language-plaintext highlighter-rouge">continue</code>.</p>
 
-<p><img src="/assets/1/xcode_package_2.png" alt="Untitled" /></p>
+<p><img src="/assets/1/xcode_package_2.png.webp" alt="Untitled" /></p>
 
 <p>Yay! We can now browse any package in the Finder without having to <code class="language-plaintext highlighter-rouge">Show Package Contents</code> every time (who cares about SIP anyways).</p>
 
