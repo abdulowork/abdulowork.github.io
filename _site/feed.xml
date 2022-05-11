@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://abdulowork.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://abdulowork.github.io/" rel="alternate" type="text/html" /><updated>2022-05-11T11:04:07+08:00</updated><id>https://abdulowork.github.io/feed.xml</id><title type="html">Through the wilds of 🍏 dev</title><subtitle>Writing about the experience with Apple development tools</subtitle><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><entry><title type="html">Hacking the Finder with lldb and Hopper</title><link href="https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/" rel="alternate" type="text/html" title="Hacking the Finder with lldb and Hopper" /><published>2022-05-01T00:00:00+08:00</published><updated>2022-05-01T00:00:00+08:00</updated><id>https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper</id><content type="html" xml:base="https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/"><![CDATA[<p><img src="/assets/1/title.png" alt="title" /></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2022-05-11T11:20:55+08:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Through the wilds of 🍏 dev</title><subtitle>Writing about the experience with Apple development tools</subtitle><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><entry><title type="html">Hacking the Finder with lldb and Hopper</title><link href="http://localhost:4000/Hacking-Finder-with-lldb-and-Hopper/" rel="alternate" type="text/html" title="Hacking the Finder with lldb and Hopper" /><published>2022-05-01T00:00:00+08:00</published><updated>2022-05-01T00:00:00+08:00</updated><id>http://localhost:4000/Hacking-Finder-with-lldb-and-Hopper</id><content type="html" xml:base="http://localhost:4000/Hacking-Finder-with-lldb-and-Hopper/"><![CDATA[<p><img src="/assets/1/title.png.webp" alt="title" /></p>
 
 <p>Do you want to never press <code class="language-plaintext highlighter-rouge">Show Package Contents</code> again? Or maybe you just want to learn a couple of practical lldb techniques? Either way, I invite you on the journey to discover a hidden feature within the Finder!</p>
 
@@ -24,7 +24,7 @@ The backstory
 
 <p>Imagine you are working on an <strong>.app</strong> with multiple <strong>.bundle</strong> and <strong>.appex</strong> directories inside it. If you want to inspect the contents of this hierarchy, you would normally use a Finder. You build using Xcode, go to the DerivedData/Build/Products, and… unfortunately, to view the contents of each package you have to click through <code class="language-plaintext highlighter-rouge">Show Package Contents</code>. This is inconvenient because Finder doesn’t allow you to easily walk in and out of the package and working with multiple packages simultaneously easily gives you vertigo.</p>
 
-<p><img src="/assets/1/show_package_contents.png" alt="show_package_contents" /></p>
+<p><img src="/assets/1/show_package_contents.png.webp" alt="show_package_contents" /></p>
 
 <p>But what if it was possible to view packages as regular directories? After all, package <strong>is just a regular directory</strong>. How does Finder even understand something is a package? It turns out some file extensions such as .<strong>app</strong> are hardcoded in LaunchServices to be recognized as packages. For example, if you simply create a directory:</p>
 
@@ -35,7 +35,7 @@ The backstory
 
 <p>You can also <a href="https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/AboutBundles/AboutBundles.html#//apple_ref/doc/uid/10000123i-CH100-SW1">register</a> your own file extensions as packages:</p>
 
-<p><img src="/assets/1/apple_bundles.png" alt="apple_bundles" /></p>
+<p><img src="/assets/1/apple_bundles.png.webp" alt="apple_bundles" /></p>
 
 <h2 id="reverse-engineering-finder-using-hopper">
 <a href="#reverse-engineering-finder-using-hopper" class="heading-link">
@@ -52,7 +52,7 @@ Reverse engineering Finder using Hopper
 
 <p>Now we can search for references to “packages”:</p>
 
-<p><img src="/assets/1/package_search_hopper.png" alt="package_search_hopper" /></p>
+<p><img src="/assets/1/package_search_hopper.png.webp" alt="package_search_hopper" /></p>
 
 <p>And thankfully there are some! Of particular interest to us is the procedure lurking under the symbol <code class="language-plaintext highlighter-rouge">-[TBrowserContainerController allowsBrowsingPackages]</code>. If we look at the pseudo-code there is something weird about this procedure:</p>
 
@@ -70,7 +70,7 @@ Reverse engineering Finder using Hopper
 
 <p>The procedure that we are interested in starts at address <code class="language-plaintext highlighter-rouge">0x10009b788</code> (in different MacOS versions it might be different):</p>
 
-<p><img src="/assets/1/load_address.png" alt="load_address" /></p>
+<p><img src="/assets/1/load_address.png.webp" alt="load_address" /></p>
 
 <p>Let’s set a breakpoint there:</p>
 
@@ -90,7 +90,7 @@ Breakpoint 1: where <span class="o">=</span> Finder<span class="sb">`</span>___l
 
 <p>After the Finder execution continues you should finally be able to browse through any package as if it was a regular directory:</p>
 
-<p><img src="/assets/1/xcode_package.png" alt="xcode_package" /></p>
+<p><img src="/assets/1/xcode_package.png.webp" alt="xcode_package" /></p>
 
 <p>So after all the <code class="language-plaintext highlighter-rouge">-[TBrowserContainerController allowsBrowsingPackages]</code> is indeed responsible for displaying packages as regular directories! But how can we <code class="language-plaintext highlighter-rouge">return 1</code> from this procedure without having to type commands in lldb after opening each directory in Finder?</p>
 
@@ -171,7 +171,7 @@ Manipulating opcodes
 
 <p>Now we can finally unpause the Finder using <code class="language-plaintext highlighter-rouge">continue</code>.</p>
 
-<p><img src="/assets/1/xcode_package_2.png" alt="Untitled" /></p>
+<p><img src="/assets/1/xcode_package_2.png.webp" alt="Untitled" /></p>
 
 <p>Yay! We can now browse any package in the Finder without having to <code class="language-plaintext highlighter-rouge">Show Package Contents</code> every time (who cares about SIP anyways).</p>
 

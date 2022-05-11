@@ -5,7 +5,7 @@ tags: lldb Finder Hopper assembly
 excerpt_separator: <!--more-->
 ---
 
-![title](/assets/1/title.png)
+![title](/assets/1/title.png.webp)
 
 Do you want to never press `Show Package Contents` again? Or maybe you just want to learn a couple of practical lldb techniques? Either way, I invite you on the journey to discover a hidden feature within the Finder!
 
@@ -25,7 +25,7 @@ Recently I had to work a lot with packages. What kind of packages? The most usua
 
 Imagine you are working on an **.app** with multiple **.bundle** and **.appex** directories inside it. If you want to inspect the contents of this hierarchy, you would normally use a Finder. You build using Xcode, go to the DerivedData/Build/Products, and... unfortunately, to view the contents of each package you have to click through `Show Package Contents`. This is inconvenient because Finder doesn’t allow you to easily walk in and out of the package and working with multiple packages simultaneously easily gives you vertigo.
 
-![show_package_contents](/assets/1/show_package_contents.png)
+![show_package_contents](/assets/1/show_package_contents.png.webp)
 
 But what if it was possible to view packages as regular directories? After all, package **is just a regular directory**. How does Finder even understand something is a package? It turns out some file extensions such as .**app** are hardcoded in LaunchServices to be recognized as packages. For example, if you simply create a directory:
 
@@ -37,7 +37,7 @@ it will show up as a package in the Finder.
 
 You can also [register](https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/AboutBundles/AboutBundles.html#//apple_ref/doc/uid/10000123i-CH100-SW1) your own file extensions as packages:
 
-![apple_bundles](/assets/1/apple_bundles.png)
+![apple_bundles](/assets/1/apple_bundles.png.webp)
 
 {% include linked-heading.html heading="Reverse engineering Finder using Hopper" level=2 %}
 
@@ -51,7 +51,7 @@ $ hopperv4 --executable /System/Library/CoreServices/Finder.app/Contents/MacOS/F
 
 Now we can search for references to “packages”:
 
-![package_search_hopper](/assets/1/package_search_hopper.png)
+![package_search_hopper](/assets/1/package_search_hopper.png.webp)
 
 And thankfully there are some! Of particular interest to us is the procedure lurking under the symbol `-[TBrowserContainerController allowsBrowsingPackages]`. If we look at the pseudo-code there is something weird about this procedure:
 
@@ -71,7 +71,7 @@ $ sudo lldb --attach-name Finder
 
 The procedure that we are interested in starts at address `0x10009b788` (in different MacOS versions it might be different):
 
-![load_address](/assets/1/load_address.png)
+![load_address](/assets/1/load_address.png.webp)
 
 Let's set a breakpoint there:
 
@@ -93,7 +93,7 @@ Now click on `/Applications` in the Finder and it should freeze due to a breakpo
 
 After the Finder execution continues you should finally be able to browse through any package as if it was a regular directory:
 
-![xcode_package](/assets/1/xcode_package.png)
+![xcode_package](/assets/1/xcode_package.png.webp)
 
 So after all the `-[TBrowserContainerController allowsBrowsingPackages]` is indeed responsible for displaying packages as regular directories! But how can we `return 1` from this procedure without having to type commands in lldb after opening each directory in Finder?
 
@@ -173,7 +173,7 @@ and if we read the instructions now, the assembly should change as expected:
 
 Now we can finally unpause the Finder using `continue`.
 
-![Untitled](/assets/1/xcode_package_2.png)
+![Untitled](/assets/1/xcode_package_2.png.webp)
 
 Yay! We can now browse any package in the Finder without having to `Show Package Contents` every time (who cares about SIP anyways).
 
