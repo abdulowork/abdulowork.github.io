@@ -3,12 +3,12 @@
 	"file": "style.css",
 	"sources": [
 		"style.scss",
-		"../.rbenv/versions/2.7.2/lib/ruby/gems/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/skins/dark.scss",
-		"../.rbenv/versions/2.7.2/lib/ruby/gems/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/initialize.scss",
-		"../.rbenv/versions/2.7.2/lib/ruby/gems/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/custom-variables.scss",
+		"vendor/bundle/ruby/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/skins/dark.scss",
+		"vendor/bundle/ruby/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/initialize.scss",
+		"vendor/bundle/ruby/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/custom-variables.scss",
 		"_sass/minima/_base.scss",
-		"../.rbenv/versions/2.7.2/lib/ruby/gems/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/_layout.scss",
-		"../.rbenv/versions/2.7.2/lib/ruby/gems/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/custom-styles.scss"
+		"vendor/bundle/ruby/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/_layout.scss",
+		"vendor/bundle/ruby/2.7.0/bundler/gems/minima-296bf6b872b8/_sass/minima/custom-styles.scss"
 	],
 	"sourcesContent": [
 		"@import\n  \"minima/skins/dark\",\n  \"minima/initialize\";\n",
