@@ -2,7 +2,7 @@
 layout: post
 title:  "Hacking the Finder with lldb and Hopper"
 tags: lldb Finder Hopper assembly
-image: /assets/1/title.png.webp
+image: /assets/1/title.png
 excerpt_separator: <!--more-->
 ---
 
