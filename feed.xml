@@ -1,4 +1,108 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://abdulowork.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://abdulowork.github.io/" rel="alternate" type="text/html" /><updated>2022-05-13T17:41:15+00:00</updated><id>https://abdulowork.github.io/feed.xml</id><title type="html">Through the wilds of 🍏 dev</title><subtitle>Writing about the experience with Apple development tools</subtitle><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><entry><title type="html">Hacking the Finder with lldb and Hopper</title><link href="https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/" rel="alternate" type="text/html" title="Hacking the Finder with lldb and Hopper" /><published>2022-05-01T00:00:00+00:00</published><updated>2022-05-01T00:00:00+00:00</updated><id>https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper</id><content type="html" xml:base="https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/"><![CDATA[<p><img src="/assets/1/title.png.webp" alt="title" /></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://abdulowork.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://abdulowork.github.io/" rel="alternate" type="text/html" /><updated>2022-09-04T16:20:19+00:00</updated><id>https://abdulowork.github.io/feed.xml</id><title type="html">Through the wilds of 🍏 dev</title><subtitle>Writing about the experience with Apple development tools</subtitle><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><entry><title type="html">Building Swift Code Faster</title><link href="https://abdulowork.github.io/Building-Swift-Code-Faster/" rel="alternate" type="text/html" title="Building Swift Code Faster" /><published>2022-09-04T00:00:00+00:00</published><updated>2022-09-04T00:00:00+00:00</updated><id>https://abdulowork.github.io/Building-Swift-Code-Faster</id><content type="html" xml:base="https://abdulowork.github.io/Building-Swift-Code-Faster/"><![CDATA[<p><img src="/assets/2/title.png.webp" alt="title" /></p>
+
+<p>How do you speed up the build of your Swift project? Do you use <code class="language-plaintext highlighter-rouge">-warn-long-function-bodies</code> or maybe even <code class="language-plaintext highlighter-rouge">-stats-output-dir</code>? These can find some compilation performance issues, but how do you truly take your build times to the next level?</p>
+
+<p>In this article, I want to show you how tweaking some build settings can drastically speed up your clean build times.</p>
+
+<!--more-->
+
+<p>Let us start by building Avito with the default Xcode build settings. For the benchmark, I am using <code class="language-plaintext highlighter-rouge">M1 Pro</code> with <code class="language-plaintext highlighter-rouge">32 GB</code> RAM. Here is the result:</p>
+
+<p><img src="/assets/2/measurement_0.png.webp" alt="measurements_0" /></p>
+
+<p>So our clean build time is somewhere around 240 seconds. Is that good? Is that bad? Let us compute some stats for our project.</p>
+
+<p>A way to measure the size of the project is to use a <a href="https://github.com/AlDanial/cloc">cloc</a> utility.<br />
+Here is what we got:</p>
+
+<ul>
+  <li>1 240 000 lines of Swift code</li>
+  <li>100 000 lines of Objective-C code (mostly external dependencies)</li>
+  <li>6000 lines of C code</li>
+</ul>
+
+<p>I would say that 240 seconds is not bad. But can we go faster? Let us switch <code class="language-plaintext highlighter-rouge">SWIFT_COMPILATION_MODE</code> from <code class="language-plaintext highlighter-rouge">incremental</code> to <code class="language-plaintext highlighter-rouge">wholemodule</code> and see where that leads.<br /> 
+This change gets us to the following build duration distribution:</p>
+
+<p><img src="/assets/2/measurement_1.png.webp" alt="measurements_1" /></p>
+
+<p><strong>Now the average build time is 179 seconds. Somehow our build got faster by 25%!</strong></p>
+
+<h2 id="how-well-is-your-build-parallelized">
+<a href="#how-well-is-your-build-parallelized" class="heading-link">
+How well is your build parallelized?
+</a>
+</h2>
+
+<p>To understand why the build became faster, we first need to know the difference between <code class="language-plaintext highlighter-rouge">incremental</code> and <code class="language-plaintext highlighter-rouge">wholemodule</code> compilation modes.</p>
+
+<p>The summary is:</p>
+
+<ul>
+  <li>When we build with <code class="language-plaintext highlighter-rouge">incremental</code>, the build system uses a batch mode for the swift compiler. The batch mode splits each module compilation into multiple jobs and executes those jobs in parallel.</li>
+  <li>On the other hand, <code class="language-plaintext highlighter-rouge">wholemodule</code> runs a mostly single-threaded compilation of the module without splitting it in any way.</li>
+</ul>
+
+<p>So <code class="language-plaintext highlighter-rouge">incremental</code> looks like it should be faster due to better parallelization, but why does <code class="language-plaintext highlighter-rouge">wholemodule</code> perform better in the end?</p>
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">incremental</code> build is slower because the compiler has to do more work compiling a module in batches rather than compiling a module as a whole which results in some overhead.<br /></li>
+  <li>At the same time, even though the <code class="language-plaintext highlighter-rouge">wholemodule</code> compilation is single-threaded, many modules still build in parallel, making this mode efficient.</li>
+</ol>
+
+<p>The <a href="https://github.com/apple/swift/blob/b65e1bb5b566f6509430bc01a494086b3b31769b/docs/CompilerPerformance.md">compiler documentation</a> also makes a note that <code class="language-plaintext highlighter-rouge">wholemodule</code> could be faster than <code class="language-plaintext highlighter-rouge">incremental</code> under circumstances where many modules build in parallel:</p>
+
+<blockquote>
+  <p>It is, therefore, possible that in certain cases (such as with limited available parallelism / many modules built in parallel), building in whole-module mode with optimization disabled can complete in less time than batched primary-file mode</p>
+</blockquote>
+
+<p>So how well is build at Avito parallelized?<br />
+To understand that, we will employ a visualization similar to that introduced in Xcode 14. It allows us to see how many modules build in parallel at a particular time.</p>
+
+<p>Let us first take a look at Avito built with <code class="language-plaintext highlighter-rouge">incremental</code> compilation mode:</p>
+
+<p><img src="/assets/2/incremental.png.webp" alt="incremental" /></p>
+
+<p>Here colored rectangles represent heavy Xcode build system invocations: <code class="language-plaintext highlighter-rouge">swiftc</code>, <code class="language-plaintext highlighter-rouge">ld</code>, and some other tools such as <code class="language-plaintext highlighter-rouge">actool</code>. The build seems well parallelized with the <code class="language-plaintext highlighter-rouge">incremental</code> compilation mode.</p>
+
+<p>Now take a look at the visualization produced with <code class="language-plaintext highlighter-rouge">wholemodule</code> compilation mode:</p>
+
+<p><img src="/assets/2/wmo.png.webp" alt="wmo" /></p>
+
+<p>We can see where Avito build is faring well and where it could do better. The reason for this specific shape of the graph is our architecture. At first, we build different utilities which don’t have many dependencies, then follow the poorly parallelized parts of the build - monolithic modules. At last, we have feature modules that don’t depend on one another and build in parallel.</p>
+
+<p>Another way to look at build performance is by looking at CPU utilization. The Instruments <code class="language-plaintext highlighter-rouge">CPU Profiler</code> trace maps to the <code class="language-plaintext highlighter-rouge">wholemodule</code> graph quite well:</p>
+
+<p><img src="/assets/2/wmo_with_cpu.png.webp" alt="wmo_with_cpu" /></p>
+
+<p>As expected, there is a sag in CPU utilization where parallelization isn’t perfect.</p>
+
+<h2 id="squeezing-the-last-bits-of-build-performance">
+<a href="#squeezing-the-last-bits-of-build-performance" class="heading-link">
+Squeezing the last bits of build performance
+</a>
+</h2>
+
+<p>In an ideal build scenario, all modules would build parallel across all available cores. Unfortunately, mistakes in architecture can make such a goal unattainable.</p>
+
+<p><strong>However, there is something we can do to make the build more efficient without reengineering everything from scratch.</strong><br />
+What if we try to leverage the best of <code class="language-plaintext highlighter-rouge">wholemodule</code> and <code class="language-plaintext highlighter-rouge">incremental</code> simultaneously? We can keep using <code class="language-plaintext highlighter-rouge">wholemodule</code> where the build process is parallelized well and switch to <code class="language-plaintext highlighter-rouge">incremental</code> for those monolithic modules in the middle. That leads to the following build distribution:</p>
+
+<p><img src="/assets/2/measurement_2.png.webp" alt="measurements_2" /></p>
+
+<p><strong>This change gave us another 14 seconds!</strong>
+The CPU is loaded much more evenly, and gaps in the build graph are smaller.</p>
+
+<p><img src="/assets/2/wmo_and_incremental_with_cpu.png.webp" alt="wmo_and_incremental_with_cpu" /></p>
+
+<h2 id="what-s-next">
+<a href="#what-s-next" class="heading-link">
+What’s next?
+</a>
+</h2>
+
+<p>Here we only looked at clean builds. Next time I will tell you all about the incremental builds at Avito!</p>
+
+<p>Does tweaking compilation modes make your builds faster? How large is your project, and how swiftly does it build? Let me know in the comments!</p>]]></content><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><category term="xcodebuild" /><category term="Xcode" /><category term="build" /><category term="system" /><category term="compilation" /><category term="speed" /><category term="wholemodule" /><category term="incremental" /><summary type="html"><![CDATA[How do you speed up the build of your Swift project? Do you use -warn-long-function-bodies or maybe even -stats-output-dir? These can find some compilation performance issues, but how do you truly take your build times to the next level? In this article, I want to show you how tweaking some build settings can drastically speed up your clean build times.]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://abdulowork.github.io/assets/2/title.png" /><media:content medium="image" url="https://abdulowork.github.io/assets/2/title.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">Hacking the Finder with lldb and Hopper</title><link href="https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/" rel="alternate" type="text/html" title="Hacking the Finder with lldb and Hopper" /><published>2022-05-01T00:00:00+00:00</published><updated>2022-05-01T00:00:00+00:00</updated><id>https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper</id><content type="html" xml:base="https://abdulowork.github.io/Hacking-Finder-with-lldb-and-Hopper/"><![CDATA[<p><img src="/assets/1/title.png.webp" alt="title" /></p>
 
 <p>Do you want to never press <code class="language-plaintext highlighter-rouge">Show Package Contents</code> again? Or maybe you just want to learn a couple of practical lldb techniques? Either way, I invite you on the journey to discover a hidden feature within the Finder!</p>
 

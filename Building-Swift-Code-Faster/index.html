@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Building Swift Code Faster | Through the wilds of 🍏 dev</title>
+<meta name="generator" content="Jekyll v4.2.2" />
+<meta property="og:title" content="Building Swift Code Faster" />
+<meta name="author" content="Timofey Solonin" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="How do you speed up the build of your Swift project? Do you use -warn-long-function-bodies or maybe even -stats-output-dir? These can find some compilation performance issues, but how do you truly take your build times to the next level? In this article, I want to show you how tweaking some build settings can drastically speed up your clean build times." />
+<meta property="og:description" content="How do you speed up the build of your Swift project? Do you use -warn-long-function-bodies or maybe even -stats-output-dir? These can find some compilation performance issues, but how do you truly take your build times to the next level? In this article, I want to show you how tweaking some build settings can drastically speed up your clean build times." />
+<link rel="canonical" href="https://abdulowork.github.io/Building-Swift-Code-Faster/" />
+<meta property="og:url" content="https://abdulowork.github.io/Building-Swift-Code-Faster/" />
+<meta property="og:site_name" content="Through the wilds of 🍏 dev" />
+<meta property="og:image" content="https://abdulowork.github.io/assets/2/title.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-09-04T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://abdulowork.github.io/assets/2/title.png" />
+<meta property="twitter:title" content="Building Swift Code Faster" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Timofey Solonin"},"dateModified":"2022-09-04T00:00:00+00:00","datePublished":"2022-09-04T00:00:00+00:00","description":"How do you speed up the build of your Swift project? Do you use -warn-long-function-bodies or maybe even -stats-output-dir? These can find some compilation performance issues, but how do you truly take your build times to the next level? In this article, I want to show you how tweaking some build settings can drastically speed up your clean build times.","headline":"Building Swift Code Faster","image":"https://abdulowork.github.io/assets/2/title.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://abdulowork.github.io/Building-Swift-Code-Faster/"},"url":"https://abdulowork.github.io/Building-Swift-Code-Faster/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://abdulowork.github.io/feed.xml" title="Through the wilds of 🍏 dev" /><script async src="https://www.googletagmanager.com/gtag/js?id=G-XDPHFVS0QQ"></script>
+<script>
+  window['ga-disable-G-XDPHFVS0QQ'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-XDPHFVS0QQ');
+</script>
+
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Through the wilds of 🍏 dev</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">Posts</a><a class="page-link" href="/talks/">Talks</a><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Building Swift Code Faster</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2022-09-04T00:00:00+00:00" itemprop="datePublished">
+        Sep 4, 2022
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p><img src="/assets/2/title.png.webp" alt="title" /></p>
+
+<p>How do you speed up the build of your Swift project? Do you use <code class="language-plaintext highlighter-rouge">-warn-long-function-bodies</code> or maybe even <code class="language-plaintext highlighter-rouge">-stats-output-dir</code>? These can find some compilation performance issues, but how do you truly take your build times to the next level?</p>
+
+<p>In this article, I want to show you how tweaking some build settings can drastically speed up your clean build times.</p>
+
+<!--more-->
+
+<p>Let us start by building Avito with the default Xcode build settings. For the benchmark, I am using <code class="language-plaintext highlighter-rouge">M1 Pro</code> with <code class="language-plaintext highlighter-rouge">32 GB</code> RAM. Here is the result:</p>
+
+<p><img src="/assets/2/measurement_0.png.webp" alt="measurements_0" /></p>
+
+<p>So our clean build time is somewhere around 240 seconds. Is that good? Is that bad? Let us compute some stats for our project.</p>
+
+<p>A way to measure the size of the project is to use a <a href="https://github.com/AlDanial/cloc">cloc</a> utility.<br />
+Here is what we got:</p>
+
+<ul>
+  <li>1 240 000 lines of Swift code</li>
+  <li>100 000 lines of Objective-C code (mostly external dependencies)</li>
+  <li>6000 lines of C code</li>
+</ul>
+
+<p>I would say that 240 seconds is not bad. But can we go faster? Let us switch <code class="language-plaintext highlighter-rouge">SWIFT_COMPILATION_MODE</code> from <code class="language-plaintext highlighter-rouge">incremental</code> to <code class="language-plaintext highlighter-rouge">wholemodule</code> and see where that leads.<br /> 
+This change gets us to the following build duration distribution:</p>
+
+<p><img src="/assets/2/measurement_1.png.webp" alt="measurements_1" /></p>
+
+<p><strong>Now the average build time is 179 seconds. Somehow our build got faster by 25%!</strong></p>
+
+<h2 id="how-well-is-your-build-parallelized">
+<a href="#how-well-is-your-build-parallelized" class="heading-link">
+How well is your build parallelized?
+</a>
+</h2>
+
+<p>To understand why the build became faster, we first need to know the difference between <code class="language-plaintext highlighter-rouge">incremental</code> and <code class="language-plaintext highlighter-rouge">wholemodule</code> compilation modes.</p>
+
+<p>The summary is:</p>
+
+<ul>
+  <li>When we build with <code class="language-plaintext highlighter-rouge">incremental</code>, the build system uses a batch mode for the swift compiler. The batch mode splits each module compilation into multiple jobs and executes those jobs in parallel.</li>
+  <li>On the other hand, <code class="language-plaintext highlighter-rouge">wholemodule</code> runs a mostly single-threaded compilation of the module without splitting it in any way.</li>
+</ul>
+
+<p>So <code class="language-plaintext highlighter-rouge">incremental</code> looks like it should be faster due to better parallelization, but why does <code class="language-plaintext highlighter-rouge">wholemodule</code> perform better in the end?</p>
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">incremental</code> build is slower because the compiler has to do more work compiling a module in batches rather than compiling a module as a whole which results in some overhead.<br /></li>
+  <li>At the same time, even though the <code class="language-plaintext highlighter-rouge">wholemodule</code> compilation is single-threaded, many modules still build in parallel, making this mode efficient.</li>
+</ol>
+
+<p>The <a href="https://github.com/apple/swift/blob/b65e1bb5b566f6509430bc01a494086b3b31769b/docs/CompilerPerformance.md">compiler documentation</a> also makes a note that <code class="language-plaintext highlighter-rouge">wholemodule</code> could be faster than <code class="language-plaintext highlighter-rouge">incremental</code> under circumstances where many modules build in parallel:</p>
+
+<blockquote>
+  <p>It is, therefore, possible that in certain cases (such as with limited available parallelism / many modules built in parallel), building in whole-module mode with optimization disabled can complete in less time than batched primary-file mode</p>
+</blockquote>
+
+<p>So how well is build at Avito parallelized?<br />
+To understand that, we will employ a visualization similar to that introduced in Xcode 14. It allows us to see how many modules build in parallel at a particular time.</p>
+
+<p>Let us first take a look at Avito built with <code class="language-plaintext highlighter-rouge">incremental</code> compilation mode:</p>
+
+<p><img src="/assets/2/incremental.png.webp" alt="incremental" /></p>
+
+<p>Here colored rectangles represent heavy Xcode build system invocations: <code class="language-plaintext highlighter-rouge">swiftc</code>, <code class="language-plaintext highlighter-rouge">ld</code>, and some other tools such as <code class="language-plaintext highlighter-rouge">actool</code>. The build seems well parallelized with the <code class="language-plaintext highlighter-rouge">incremental</code> compilation mode.</p>
+
+<p>Now take a look at the visualization produced with <code class="language-plaintext highlighter-rouge">wholemodule</code> compilation mode:</p>
+
+<p><img src="/assets/2/wmo.png.webp" alt="wmo" /></p>
+
+<p>We can see where Avito build is faring well and where it could do better. The reason for this specific shape of the graph is our architecture. At first, we build different utilities which don’t have many dependencies, then follow the poorly parallelized parts of the build - monolithic modules. At last, we have feature modules that don’t depend on one another and build in parallel.</p>
+
+<p>Another way to look at build performance is by looking at CPU utilization. The Instruments <code class="language-plaintext highlighter-rouge">CPU Profiler</code> trace maps to the <code class="language-plaintext highlighter-rouge">wholemodule</code> graph quite well:</p>
+
+<p><img src="/assets/2/wmo_with_cpu.png.webp" alt="wmo_with_cpu" /></p>
+
+<p>As expected, there is a sag in CPU utilization where parallelization isn’t perfect.</p>
+
+<h2 id="squeezing-the-last-bits-of-build-performance">
+<a href="#squeezing-the-last-bits-of-build-performance" class="heading-link">
+Squeezing the last bits of build performance
+</a>
+</h2>
+
+<p>In an ideal build scenario, all modules would build parallel across all available cores. Unfortunately, mistakes in architecture can make such a goal unattainable.</p>
+
+<p><strong>However, there is something we can do to make the build more efficient without reengineering everything from scratch.</strong><br />
+What if we try to leverage the best of <code class="language-plaintext highlighter-rouge">wholemodule</code> and <code class="language-plaintext highlighter-rouge">incremental</code> simultaneously? We can keep using <code class="language-plaintext highlighter-rouge">wholemodule</code> where the build process is parallelized well and switch to <code class="language-plaintext highlighter-rouge">incremental</code> for those monolithic modules in the middle. That leads to the following build distribution:</p>
+
+<p><img src="/assets/2/measurement_2.png.webp" alt="measurements_2" /></p>
+
+<p><strong>This change gave us another 14 seconds!</strong>
+The CPU is loaded much more evenly, and gaps in the build graph are smaller.</p>
+
+<p><img src="/assets/2/wmo_and_incremental_with_cpu.png.webp" alt="wmo_and_incremental_with_cpu" /></p>
+
+<h2 id="what-s-next">
+<a href="#what-s-next" class="heading-link">
+What’s next?
+</a>
+</h2>
+
+<p>Here we only looked at clean builds. Next time I will tell you all about the incremental builds at Avito!</p>
+
+<p>Does tweaking compilation modes make your builds faster? How large is your project, and how swiftly does it build? Let me know in the comments!</p>
+
+  </div><script src="https://giscus.app/client.js"
+          data-repo="abdulowork/abdulowork.github.io"
+          data-repo-id="R_kgDOHQRyQg"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOHQRyQs4CPAeZ"
+          data-mapping="og:title"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="transparent_dark"
+          data-lang="en"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <a class="u-url" href="/Building-Swift-Code-Faster/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+        <ul class="contact-list">
+          <li class="p-name">Timofey Solonin</li>
+          <li><a class="u-email" href="mailto:abdulowork@gmail.com">abdulowork@gmail.com</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p>Writing about the experience with Apple development tools</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/abdulowork" target="_blank" title="abdulowork"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://stackoverflow.com/users/6407425" target="_blank" title="6407425"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#stackoverflow"></use></svg></a></li><li><a rel="me" href="https://www.linkedin.com/in/timofey-solonin" target="_blank" title="timofey-solonin"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg></a></li><li><a rel="me" href="https://twitter.com/abdulowork" target="_blank" title="abdulowork"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
