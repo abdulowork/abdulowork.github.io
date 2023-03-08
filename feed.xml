@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://abdulowork.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://abdulowork.github.io/" rel="alternate" type="text/html" /><updated>2023-03-07T10:10:51+00:00</updated><id>https://abdulowork.github.io/feed.xml</id><title type="html">Through the wilds of 🍏 dev</title><subtitle>Writing about the experience with Apple development tools</subtitle><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><entry><title type="html">Debugging lldb Scripts in PyCharm</title><link href="https://abdulowork.github.io/Debugging-lldb-Scripts-in-PyCharm/" rel="alternate" type="text/html" title="Debugging lldb Scripts in PyCharm" /><published>2023-03-07T00:00:00+00:00</published><updated>2023-03-07T00:00:00+00:00</updated><id>https://abdulowork.github.io/Debugging-lldb-Scripts-in-PyCharm</id><content type="html" xml:base="https://abdulowork.github.io/Debugging-lldb-Scripts-in-PyCharm/"><![CDATA[<p><img src="/assets/3/title.png" alt="title" /></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://abdulowork.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://abdulowork.github.io/" rel="alternate" type="text/html" /><updated>2023-03-08T06:56:35+00:00</updated><id>https://abdulowork.github.io/feed.xml</id><title type="html">Through the wilds of 🍏 dev</title><subtitle>Writing about the experience with Apple development tools</subtitle><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><entry><title type="html">Debugging lldb Scripts in PyCharm</title><link href="https://abdulowork.github.io/Debugging-lldb-Scripts-in-PyCharm/" rel="alternate" type="text/html" title="Debugging lldb Scripts in PyCharm" /><published>2023-03-07T00:00:00+00:00</published><updated>2023-03-07T00:00:00+00:00</updated><id>https://abdulowork.github.io/Debugging-lldb-Scripts-in-PyCharm</id><content type="html" xml:base="https://abdulowork.github.io/Debugging-lldb-Scripts-in-PyCharm/"><![CDATA[<p><img src="/assets/3/title_updated.png" alt="title" /></p>
 
 <p>Debugging in <code class="language-plaintext highlighter-rouge">lldb</code> can be great. But sometimes, running commands manually becomes tedious. Fortunately, <code class="language-plaintext highlighter-rouge">lldb</code> provides a way to automate any action: <strong>Python scripts!</strong></p>
 
@@ -175,42 +175,40 @@ g++ <span class="nt">-dynamiclib</span> <span class="nt">-nostartfiles</span> <s
 
 <p>PyCharm still tries to inject the Intel library, but everything works out since we preloaded the <code class="language-plaintext highlighter-rouge">DoAttach</code> function.</p>
 
-<h2 id="waiting-for-the-debugger">
-<a href="#waiting-for-the-debugger" class="heading-link">
-Waiting for the debugger
+<h2 id="working-in-pycharm">
+<a href="#working-in-pycharm" class="heading-link">
+Working in PyCharm
 </a>
 </h2>
 
-<p>Now that all platforms are attachable, we need a way to stop at the section we want to debug. <code class="language-plaintext highlighter-rouge">pydevd.settrace()</code> is the call we are seeking.</p>
+<p><strong>UPD:</strong> I was originally using <code class="language-plaintext highlighter-rouge">pydevd.settrace()</code> to break execution. Actually there is need no call pydevd API directly, just set a breakpoint in PyCharm and execution will break as usual.</p>
 
-<p>However, the issue is that neither the project in PyCharm, where we work on the script, nor lldb, where the script executes, know anything about <code class="language-plaintext highlighter-rouge">pydevd</code> APIs. If we stick <code class="language-plaintext highlighter-rouge">import pydevd</code> into the script, nothing works:</p>
+<details>
+  <summary>But here is how you could tinkerer with pydevd directly from lldb</summary>
 
-<p><img src="/assets/3/lldb_output_4.png" alt="lldb_output_4" /></p>
+  <p>The issue is that neither the project in PyCharm, where we work on the script, nor lldb, where the script executes, know anything about <code class="language-plaintext highlighter-rouge">pydevd</code> APIs. If we stick <code class="language-plaintext highlighter-rouge">import pydevd</code> into the script, nothing works:</p>
 
-<p>Let’s first fix the lldb runtime. On my <code class="language-plaintext highlighter-rouge">PyCharm CE</code> pydevd is located in:</p>
+  <p><img src="/assets/3/lldb_output_4.png" alt="lldb_output_4" /></p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/pydev
-</code></pre></div></div>
+  <p>Let’s first fix the lldb runtime. On my <code class="language-plaintext highlighter-rouge">PyCharm CE</code> pydevd is located in:</p>
 
-<p>To make the <code class="language-plaintext highlighter-rouge">pydevd</code> module accessible to the lldb runtime, we need to add this directory to the python module search paths using the  <code class="language-plaintext highlighter-rouge">sys.path</code> API. Try adding the following lines at the beginning of <code class="language-plaintext highlighter-rouge">test.py</code>:</p>
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/pydev
+</code></pre></div>  </div>
 
-<p><img src="/assets/3/pydevd.png" alt="lldb_output_4" /></p>
+  <p>To make the <code class="language-plaintext highlighter-rouge">pydevd</code> module accessible to the lldb runtime, we need to add this directory to the python module search paths using the  <code class="language-plaintext highlighter-rouge">sys.path</code> API. Try adding the following lines at the beginning of <code class="language-plaintext highlighter-rouge">test.py</code>:</p>
 
-<p>The <code class="language-plaintext highlighter-rouge">lldb -o test_loop</code> command is working again!</p>
+  <p><img src="/assets/3/pydevd.png" alt="lldb_output_4" /></p>
 
-<p>Now we need to make PyCharm aware of the API. One way to do that is to create a <code class="language-plaintext highlighter-rouge">pth</code> pointer in the <code class="language-plaintext highlighter-rouge">site-packages</code>:</p>
+  <p>The <code class="language-plaintext highlighter-rouge">lldb -o test_loop</code> command is working again!</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/pydev'</span> <span class="o">&gt;</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">echo </span>python_env/lib/python<span class="k">*</span><span class="si">)</span><span class="s2">/site-packages/pydev.pth"</span>
-</code></pre></div></div>
+  <p>To make PyCharm aware of the API do:</p>
 
-<p>Since we will be writing scripts for lldb, let’s also pull in the lldb API:</p>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/pydev'</span> <span class="o">&gt;</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">echo </span>python_env/lib/python<span class="k">*</span><span class="si">)</span><span class="s2">/site-packages/pydev.pth"</span>
+</code></pre></div>  </div>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">dirname</span> <span class="si">$(</span>xcode-select <span class="nt">-p</span><span class="si">))</span><span class="s2">"</span>/SharedFrameworks/LLDB.framework/Versions/A/Resources/Python <span class="o">&gt;</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">echo </span>python_env/lib/python<span class="k">*</span><span class="si">)</span><span class="s2">/site-packages/lldb.pth"</span>
-</code></pre></div></div>
+  <p>We can now <code class="language-plaintext highlighter-rouge">import pydevd</code>. Go to the <code class="language-plaintext highlighter-rouge">test_loop</code> function and rewrite it to:</p>
 
-<p>We can now <code class="language-plaintext highlighter-rouge">import pydevd</code> and <code class="language-plaintext highlighter-rouge">import lldb</code>! Go to the <code class="language-plaintext highlighter-rouge">test_loop</code> function and rewrite it to:</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">os</span>
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="n">sys</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="s">'/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/pydev'</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">lldb</span> <span class="kn">import</span> <span class="n">SBDebugger</span><span class="p">,</span> <span class="n">SBCommandReturnObject</span>  
@@ -227,20 +225,32 @@ Waiting for the debugger
     <span class="k">print</span><span class="p">(</span><span class="n">debugger</span><span class="p">.</span><span class="n">GetSelectedTarget</span><span class="p">())</span>  
     <span class="n">result</span><span class="p">.</span><span class="n">AppendWarning</span><span class="p">(</span><span class="sa">f</span><span class="s">'Warning from </span><span class="si">{</span><span class="n">test_loop</span><span class="p">.</span><span class="n">__name__</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>  
     <span class="k">print</span><span class="p">(</span><span class="s">''</span><span class="p">)</span>
+</code></pre></div>  </div>
+
+</details>
+
+<p><br /></p>
+
+<p>Now that all platforms are attachable, we need to make PyCharm aware of the <code class="language-plaintext highlighter-rouge">lldb</code> API. One way to do that is to create a <code class="language-plaintext highlighter-rouge">pth</code> pointer in the <code class="language-plaintext highlighter-rouge">site-packages</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">dirname</span> <span class="si">$(</span>xcode-select <span class="nt">-p</span><span class="si">))</span><span class="s2">"</span>/SharedFrameworks/LLDB.framework/Versions/A/Resources/Python <span class="o">&gt;</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">echo </span>python_env/lib/python<span class="k">*</span><span class="si">)</span><span class="s2">/site-packages/lldb.pth"</span>
 </code></pre></div></div>
+
+<p>Finally, <code class="language-plaintext highlighter-rouge">import lldb</code> works, and we are able to explore the API with proper code-completions.</p>
 
 <p>To attach to this script, do the following steps:</p>
 <ol>
   <li>Launch <code class="language-plaintext highlighter-rouge">lldb</code></li>
   <li>Attach PyCharm to the <code class="language-plaintext highlighter-rouge">lldb</code> process</li>
-  <li>Call the command from <code class="language-plaintext highlighter-rouge">lldb</code>, and PyCharm will break after the <code class="language-plaintext highlighter-rouge">settrace()</code> function</li>
+  <li>Set a breakpoint</li>
+  <li>Call the command from <code class="language-plaintext highlighter-rouge">lldb</code></li>
 </ol>
 
-<p>This is what it should look like:</p>
+<p>PyCharm will break at the breakpoint. This is what it should look like:</p>
 
-<p><img src="/assets/3/pycharm_debugging.png" alt="pycharm_left" /></p>
+<p><img src="/assets/3/pycharm_debugging_updated.png" alt="pycharm_left" /></p>
 
-<p><img src="/assets/3/lldb_debugging.png" alt="lldb_right" /></p>
+<p><img src="/assets/3/lldb_debugging_updated.png" alt="lldb_right" /></p>
 
 <p>🎉</p>
 
@@ -266,7 +276,7 @@ Scripting examples
   <source src="/assets/3/scripting_breakpoint.webm" type="video/webm" />
 </video>
 
-<p>Amazing!</p>]]></content><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><category term="lldb" /><category term="PyCharm" /><category term="pydevd" /><category term="arm64" /><category term="x86_64" /><category term="debugging" /><category term="IDE" /><category term="dlopen" /><summary type="html"><![CDATA[Debugging in lldb can be great. But sometimes, running commands manually becomes tedious. Fortunately, lldb provides a way to automate any action: Python scripts! However, writing Python scripts without IDE support and a debugger is beneath any developer’s dignity. In this tutorial, I will show you how to set up PyCharm to take your lldb scripting experience to the next level. There will be: Python and PyCharm setup for lldb scripting PyCharm fix for process attachment on an arm64 macOS Python modules injection for IDE and runtime support Debugging breakpoints and commands in PyCharm]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://abdulowork.github.io/assets/3/title.png" /><media:content medium="image" url="https://abdulowork.github.io/assets/3/title.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">Building Swift Code Faster</title><link href="https://abdulowork.github.io/Building-Swift-Code-Faster/" rel="alternate" type="text/html" title="Building Swift Code Faster" /><published>2022-09-04T00:00:00+00:00</published><updated>2022-09-04T00:00:00+00:00</updated><id>https://abdulowork.github.io/Building-Swift-Code-Faster</id><content type="html" xml:base="https://abdulowork.github.io/Building-Swift-Code-Faster/"><![CDATA[<p><img src="/assets/2/title.png.webp" alt="title" /></p>
+<p>Amazing!</p>]]></content><author><name>Timofey Solonin</name><email>abdulowork@gmail.com</email></author><category term="lldb" /><category term="PyCharm" /><category term="pydevd" /><category term="arm64" /><category term="x86_64" /><category term="debugging" /><category term="IDE" /><category term="dlopen" /><summary type="html"><![CDATA[Debugging in lldb can be great. But sometimes, running commands manually becomes tedious. Fortunately, lldb provides a way to automate any action: Python scripts! However, writing Python scripts without IDE support and a debugger is beneath any developer’s dignity. In this tutorial, I will show you how to set up PyCharm to take your lldb scripting experience to the next level. There will be: Python and PyCharm setup for lldb scripting PyCharm fix for process attachment on an arm64 macOS Python modules injection for IDE and runtime support Debugging breakpoints and commands in PyCharm]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://abdulowork.github.io/assets/3/title_updated.png" /><media:content medium="image" url="https://abdulowork.github.io/assets/3/title_updated.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">Building Swift Code Faster</title><link href="https://abdulowork.github.io/Building-Swift-Code-Faster/" rel="alternate" type="text/html" title="Building Swift Code Faster" /><published>2022-09-04T00:00:00+00:00</published><updated>2022-09-04T00:00:00+00:00</updated><id>https://abdulowork.github.io/Building-Swift-Code-Faster</id><content type="html" xml:base="https://abdulowork.github.io/Building-Swift-Code-Faster/"><![CDATA[<p><img src="/assets/2/title.png.webp" alt="title" /></p>
 
 <p>How do you speed up the build of your Swift project? Do you use <code class="language-plaintext highlighter-rouge">-warn-long-function-bodies</code> or maybe even <code class="language-plaintext highlighter-rouge">-stats-output-dir</code>? These can find some compilation performance issues, but how do you truly take your build times to the next level?</p>
 
