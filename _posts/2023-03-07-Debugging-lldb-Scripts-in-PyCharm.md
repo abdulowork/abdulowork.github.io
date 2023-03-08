@@ -2,11 +2,11 @@
 layout: post
 title:  "Debugging lldb Scripts in PyCharm"
 tags: lldb PyCharm pydevd arm64 x86_64 debugging IDE dlopen
-image: /assets/3/title.png
+image: /assets/3/title_updated.png
 excerpt_separator: <!--more-->
 ---
 
-![title](/assets/3/title.png)
+![title](/assets/3/title_updated.png)
 
 Debugging in `lldb` can be great. But sometimes, running commands manually becomes tedious. Fortunately, `lldb` provides a way to automate any action: **Python scripts!**
 
@@ -175,11 +175,13 @@ And attaching in PyCharm should finally work as expected:
 
 PyCharm still tries to inject the Intel library, but everything works out since we preloaded the `DoAttach` function.
 
-{% include linked-heading.html heading="Waiting for the debugger" level=2 %}
+{% include linked-heading.html heading="Working in PyCharm" level=2 %}
 
-Now that all platforms are attachable, we need a way to stop at the section we want to debug. `pydevd.settrace()` is the call we are seeking.
+**UPD:** I was originally using `pydevd.settrace()` to break execution. Actually there is need no call pydevd API directly, just set a breakpoint in PyCharm and execution will break as usual.
 
-However, the issue is that neither the project in PyCharm, where we work on the script, nor lldb, where the script executes, know anything about `pydevd` APIs. If we stick `import pydevd` into the script, nothing works:
+<details markdown=1><summary markdown="span">But here is how you could tinkerer with pydevd directly from lldb</summary>
+
+The issue is that neither the project in PyCharm, where we work on the script, nor lldb, where the script executes, know anything about `pydevd` APIs. If we stick `import pydevd` into the script, nothing works:
 
 ![lldb_output_4](/assets/3/lldb_output_4.png)
 
@@ -195,19 +197,13 @@ To make the `pydevd` module accessible to the lldb runtime, we need to add this 
 
 The `lldb -o test_loop` command is working again!
 
-Now we need to make PyCharm aware of the API. One way to do that is to create a `pth` pointer in the `site-packages`:
+To make PyCharm aware of the API do:
 
 ```bash
 $ echo '/Applications/PyCharm CE.app/Contents/plugins/python-ce/helpers/pydev' > "$(echo python_env/lib/python*)/site-packages/pydev.pth"
 ```
 
-Since we will be writing scripts for lldb, let's also pull in the lldb API:
-
-```bash
-$ echo "$(dirname $(xcode-select -p))"/SharedFrameworks/LLDB.framework/Versions/A/Resources/Python > "$(echo python_env/lib/python*)/site-packages/lldb.pth"
-```
-
-We can now `import pydevd` and `import lldb`! Go to the `test_loop` function and rewrite it to:
+We can now `import pydevd`. Go to the `test_loop` function and rewrite it to:
 
 ```python
 import os
@@ -229,16 +225,29 @@ def test_loop(
     print('')
 ```
 
+</details>
+
+<br />
+
+Now that all platforms are attachable, we need to make PyCharm aware of the `lldb` API. One way to do that is to create a `pth` pointer in the `site-packages`:
+
+```bash
+$ echo "$(dirname $(xcode-select -p))"/SharedFrameworks/LLDB.framework/Versions/A/Resources/Python > "$(echo python_env/lib/python*)/site-packages/lldb.pth"
+```
+
+Finally, `import lldb` works, and we are able to explore the API with proper code-completions.  
+
 To attach to this script, do the following steps:
 1. Launch `lldb`
 2. Attach PyCharm to the `lldb` process
-3. Call the command from `lldb`, and PyCharm will break after the `settrace()` function
+3. Set a breakpoint
+3. Call the command from `lldb`
 
-This is what it should look like:
+PyCharm will break at the breakpoint. This is what it should look like:
 
-![pycharm_left](/assets/3/pycharm_debugging.png)
+![pycharm_left](/assets/3/pycharm_debugging_updated.png)
 
-![lldb_right](/assets/3/lldb_debugging.png)
+![lldb_right](/assets/3/lldb_debugging_updated.png)
 
 🎉
 
